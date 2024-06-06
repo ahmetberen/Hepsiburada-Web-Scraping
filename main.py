@@ -1,4 +1,6 @@
 # Importing necessary libraries
+import unicodedata
+import re
 from urllib.parse import unquote
 import requests  # Library for making HTTP requests
 from bs4 import BeautifulSoup  # Library for parsing HTML content
@@ -11,7 +13,7 @@ product_link = []   # To store product links
 
 header = {"user-agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 OPR/107.0.0.0"}
 # URL of the Hepsiburada website to scrape
-url = 'https://www.hepsiburada.com/bellek-ramler-c-47?filtreler=ramkapasitesi:16€20GB;ramhizi:3200€20MHz;kullanimtipi:DDR4;uyumlusistemler:PC'
+url = 'https://www.hepsiburada.com/ara?q=rtx%204080'
 
 x = int(input("Type in how many pages you want to scrap: "))
 
@@ -67,6 +69,24 @@ df = pd.DataFrame(data)
 df.Price = df.Price.astype('float')
 df = df.sort_values(by=['Price'], ascending=False)
 
+def slugify(value, allow_unicode=False):
+    """
+    Taken from https://github.com/django/django/blob/master/django/utils/text.py
+    Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
+    dashes to single dashes. Remove characters that aren't alphanumerics,
+    underscores, or hyphens. Convert to lowercase. Also strip leading and
+    trailing whitespace, dashes, and underscores.
+    """
+    value = str(value)
+    if allow_unicode:
+        value = unicodedata.normalize('NFKC', value)
+    else:
+        value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    value = re.sub(r'[^\w\s-]', '', value.lower())
+    return re.sub(r'[-\s]+', '-', value).strip('-_')
+
+
 # Saving the extracted data to a CSV file
-df.to_csv('hepsiburada_data.csv',index = True)
+clean_url = slugify(url.split("m/")[1])
+df.to_csv('hepsiburada_data' + clean_url + '.csv',index = True)
 
