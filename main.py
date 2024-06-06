@@ -1,4 +1,5 @@
 # Importing necessary libraries
+from urllib.parse import unquote
 import requests  # Library for making HTTP requests
 from bs4 import BeautifulSoup  # Library for parsing HTML content
 import pandas as pd  # Library for data manipulation
@@ -12,17 +13,18 @@ header = {"user-agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/
 # URL of the Hepsiburada website to scrape
 url = 'https://www.hepsiburada.com/bellek-ramler-c-47?filtreler=ramkapasitesi:16€20GB;ramhizi:3200€20MHz;kullanimtipi:DDR4;uyumlusistemler:PC'
 
-x = int(input("Type in how many pages you want to scrap: (In this case it can't be over 6 since the max amount of pages in there is 6)"))
+x = int(input("Type in how many pages you want to scrap: "))
 
 # Making sure the program won't overhead
-if x > 6:
-    print("Cannot print more than six, assigning the max page.")
-    x = 6
 
 for i in range(x):
     if i != 0:
         # Sending a request to the Hepsiburada website
         response = requests.get(url + '&sayfa=' + str(i+1), headers=header)
+        if len(response.history) != 0:
+            print("There are no pages after " + str(i-1) + ".")
+            print("Scraping " + str(i-1) + " pages.")
+            break
     else:
         response = requests.get(url, headers=header)
 
